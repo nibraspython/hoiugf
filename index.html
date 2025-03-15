@@ -3,30 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader</title>
+    <title>YouTube Downloader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #111; color: white; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; background: red; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        #video-info { display: none; margin-top: 20px; }
+        img { width: 300px; border-radius: 10px; margin-top: 10px; }
+    </style>
 </head>
 <body>
+
     <h2>YouTube Video Downloader</h2>
-    <input type="text" id="ytUrl" placeholder="Enter YouTube URL">
-    <button onclick="getDownloadLink()">Get Download Link</button>
-    <p id="result"></p>
+    <input type="text" id="videoURL" placeholder="Enter YouTube Video URL">
+    <button onclick="fetchVideoInfo()">Get Video Info</button>
+
+    <div id="video-info">
+        <h3 id="title"></h3>
+        <img id="thumbnail" src="" alt="Thumbnail">
+        <p>Author: <span id="author"></span></p>
+        <p>Views: <span id="views"></span></p>
+        <p>Length: <span id="length"></span> seconds</p>
+        <button onclick="downloadVideo()">Download Video</button>
+    </div>
 
     <script>
-        function getDownloadLink() {
-            let url = document.getElementById("ytUrl").value;
-            let apiUrl = `https://youtube-video-downloader-api-l242.onrender.com/pvtyt?url=${encodeURIComponent(url)}&resolution=360p`;
+        const API_URL = "https://youtube-video-downloader-api-l242.onrender.com";
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.download_url) {
-                        document.getElementById("result").innerHTML = `<a href="${data.download_url}" target="_blank">Download Video</a>`;
-                    } else {
-                        document.getElementById("result").innerText = "Error: " + data.error;
-                    }
-                })
-                .catch(error => console.log(error));
+        async function fetchVideoInfo() {
+            let url = document.getElementById("videoURL").value;
+            if (!url) {
+                alert("Please enter a YouTube video URL");
+                return;
+            }
+
+            try {
+                let response = await fetch(`${API_URL}/video_info?url=${encodeURIComponent(url)}`);
+                let data = await response.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                document.getElementById("title").innerText = data.title;
+                document.getElementById("author").innerText = data.author;
+                document.getElementById("views").innerText = data.views;
+                document.getElementById("length").innerText = data.length;
+                document.getElementById("thumbnail").src = data.thumbnail;
+                document.getElementById("video-info").style.display = "block";
+            } catch (error) {
+                alert("Failed to fetch video info. Please try again later.");
+            }
+        }
+
+        async function downloadVideo() {
+            let url = document.getElementById("videoURL").value;
+            let resolution = "360p";  // Default resolution
+
+            try {
+                let response = await fetch(`${API_URL}/pvtyt?url=${encodeURIComponent(url)}&resolution=${resolution}`);
+                let data = await response.json();
+
+                if (data.download_url) {
+                    window.open(data.download_url, "_blank");
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (error) {
+                alert("Failed to fetch download link. Please try again later.");
+            }
         }
     </script>
+
 </body>
 </html>
