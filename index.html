@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+</head>
+<body>
+    <h2>YouTube Video Downloader</h2>
+    <input type="text" id="ytUrl" placeholder="Enter YouTube URL">
+    <button onclick="getDownloadLink()">Get Download Link</button>
+    <p id="result"></p>
+
+    <script>
+        function getDownloadLink() {
+            let url = document.getElementById("ytUrl").value;
+            let apiUrl = `https://youtube-video-downloader-api-l242.onrender.com/pvtyt?url=${encodeURIComponent(url)}&resolution=360p`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.download_url) {
+                        document.getElementById("result").innerHTML = `<a href="${data.download_url}" target="_blank">Download Video</a>`;
+                    } else {
+                        document.getElementById("result").innerText = "Error: " + data.error;
+                    }
+                })
+                .catch(error => console.log(error));
+        }
+    </script>
+</body>
+</html>
